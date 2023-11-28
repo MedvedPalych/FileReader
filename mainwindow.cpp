@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "bytearraymodel.h"
+#include "imagemodel.h"
 
 #include <QtDebug>
 #include <QFileDialog>
@@ -10,23 +11,27 @@ MainWindow::MainWindow(QWidget *parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-//    ui->label->setVisible(0);
-//    ui->dataField->setVisible(0);
-//    ui->setDataButton->setVisible(0);
+    ui->label->setVisible(0);
+    ui->dataField->setVisible(0);
+    ui->setDataButton->setVisible(0);
 
-    QByteArray array = QByteArray("1234567890");
-
-    ByteArrayModel* model = new ByteArrayModel();
-    model->setArray(array);
-
-    ui->tableView->setModel(model);
+//    QByteArray array = QByteArray("HELLO WORLD");
+//    ByteArrayModel* model = new ByteArrayModel();
+//    model->setArray(array);
+//    ui->tableView->setModel(model);
+    imodel = new ImageModel();
+    model  = new ByteArrayModel();
 
     connect(ui->setDataButton, SIGNAL(clicked())
-                ,this, SLOT(onSetDataRequest()));
+                       ,this, SLOT(onSetData()));
     connect(ui->actionLoad, SIGNAL(triggered(bool))
-                ,this, SLOT(onLoadFileRequest()));
+                       ,this, SLOT(onLoadFile()));
     connect(ui->actionSave, SIGNAL(triggered(bool))
-                ,this, SLOT(onSaveFileRequest()));
+                       ,this, SLOT(onSaveFile()));
+    connect(ui->actionOpenRGB, SIGNAL(triggered(bool)) //ДОМАШКА 1
+                       ,this, SLOT(onOpenRGB()));
+    connect(ui->binBtn,     SIGNAL(clicked())
+                       ,this, SLOT(onBinBtnClicked()));
 }
 
 MainWindow::~MainWindow()
@@ -34,7 +39,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::onSetDataRequest()
+void MainWindow::onSetData()
 {
     QAbstractItemModel* model = ui->tableView->model();
     if (model) {
@@ -48,18 +53,12 @@ void MainWindow::onSetDataRequest()
 // данные обновляются только при выполнении действия, обновляющего вид. Пример того, что можно сделать:
            // ui->tableView->setModel(0);     // сбрасываем
            // ui->tableView->setModel(bmodel);// и загружаем (но так НЕКРАСИВО)
-
         }
     }
 }
 
-void MainWindow::onLoadFileRequest() {
-   QAbstractItemModel* model = ui->tableView->model();
-   if (!model)
-       return;
-   ByteArrayModel* bmodel = qobject_cast< ByteArrayModel*>(model);
-   if (!bmodel)
-       return;
+void MainWindow::onLoadFile() {
+
    QString filePath = QFileDialog::getOpenFileName(
                         this, "Load file name", ".");
    QFile file(filePath);
@@ -68,24 +67,44 @@ void MainWindow::onLoadFileRequest() {
    if (!file.open(QFile::ReadOnly))
        return;
    QByteArray data = file.readAll();
-   bmodel->setArray(data);
+   model->setArray(data);
+   ui->tableView->setModel(model);
+   ui->tableView->resizeColumnsToContents();
+
 }
 
-void MainWindow::onSaveFileRequest() {
-    QAbstractItemModel* model = ui->tableView->model();
-    if (!model)
-        return;
-    ByteArrayModel* bmodel = qobject_cast< ByteArrayModel*>(model);
-    if (!bmodel)
-        return;
-    QByteArray data = bmodel->getArray();
-    QString filePath = QFileDialog::getSaveFileName(
-                         this, "Save file name", ".");
-    QFile file(filePath);
-    if (!file.open(QFile::WriteOnly))
-        return;
-    file.write(data);
-    file.flush();
-    file.close();
+void MainWindow::onOpenRGB() {
+
+  QImage image;
+  QString filePath = QFileDialog::getOpenFileName(this, "Load file name", ".");
+  if (image.load(filePath))
+      imodel->setImage(image);
+  ui->tableView->setModel(imodel);
+  ui->tableView->resizeColumnsToContents();
 }
 
+void MainWindow::onBinBtnClicked()
+{
+  if (ui->binBtn->text() == "Show bin") {
+
+      ui->binBtn->setText("Show int");
+    }
+}
+
+void MainWindow::onSaveFile() {
+  QAbstractItemModel* model = ui->tableView->model();
+  if (!model)
+    return;
+  ByteArrayModel* bmodel = qobject_cast< ByteArrayModel*>(model);
+  if (!bmodel)
+    return;
+  QByteArray data = bmodel->getArray();
+  QString filePath = QFileDialog::getSaveFileName(
+        this, "Save file name", ".");
+  QFile file(filePath);
+  if (!file.open(QFile::WriteOnly))
+    return;
+  file.write(data);
+  file.flush();
+  file.close();
+}

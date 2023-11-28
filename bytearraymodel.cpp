@@ -49,9 +49,37 @@ int ByteArrayModel::columnCount(const QModelIndex &parent) const
     return m_dptr->rowLenght;
 }
 
+QVariant ByteArrayModel::binData(const QModelIndex &index, int role) const
+{
+    QString binStr = "";
+    int temp = 0;
+    QVariant result;
+    switch(role) {
+      case Qt::DisplayRole:
+      case Qt::EditRole:   {
+        int row = index.row();
+        int col = index.column();
+        int originalIndex = row*m_dptr->rowLenght+col;
+        // TODO QString toBin(data[originalIndex])
+        if (originalIndex < m_dptr->data.size() ) {
+          temp = static_cast<int>(m_dptr->data[originalIndex]);
+          while (temp) {
+              binStr.push_front(temp & 1);
+              temp = temp >> 1;
+            }
+          result = QVariant(binStr); // сюда влепить QString bin
+        }
+      }
+        break;
+      default:
+        break;
+    }
+    return result;
+}
+
 QVariant ByteArrayModel::data(const QModelIndex &index, int role) const
 {
-    qDebug()<<role;
+
     QVariant result;
     switch(role) {
       case Qt::DisplayRole:
