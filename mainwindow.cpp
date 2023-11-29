@@ -49,16 +49,13 @@ void MainWindow::onSetData()
             qDebug()<<"model is ByteArray model";
             QString data = ui->dataField->text();
             bmodel->setArray(data.toUtf8());
-// ПРИМЕЧАНИЕ!!! Здесь сталкиваемся с тем, что при смене модели отрисовка НЕ обновляется
-// данные обновляются только при выполнении действия, обновляющего вид. Пример того, что можно сделать:
-           // ui->tableView->setModel(0);     // сбрасываем
-           // ui->tableView->setModel(bmodel);// и загружаем (но так НЕКРАСИВО)
         }
     }
 }
 
 void MainWindow::onLoadFile() {
 
+   ui->binBtn->setEnabled(1);
    QString filePath = QFileDialog::getOpenFileName(
                         this, "Load file name", ".");
    QFile file(filePath);
@@ -74,7 +71,7 @@ void MainWindow::onLoadFile() {
 }
 
 void MainWindow::onOpenRGB() {
-
+  ui->binBtn->setDisabled(1);
   QImage image;
   QString filePath = QFileDialog::getOpenFileName(this, "Load file name", ".");
   if (image.load(filePath))
@@ -85,9 +82,17 @@ void MainWindow::onOpenRGB() {
 
 void MainWindow::onBinBtnClicked()
 {
-  if (ui->binBtn->text() == "Show bin") {
-
-      ui->binBtn->setText("Show int");
+  if (ui->binBtn->text() == "Show Binary") {
+      model->switchFormat();
+      ui->tableView->setModel(model);
+      ui->tableView->resizeColumnsToContents();
+      ui->binBtn->setText("Show Byte");
+    } else
+  if (ui->binBtn->text() == "Show Byte") {
+      model->switchFormat();
+      ui->tableView->setModel(model);
+      ui->tableView->resizeColumnsToContents();
+      ui->binBtn->setText("Show Binary");
     }
 }
 

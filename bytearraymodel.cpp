@@ -1,10 +1,12 @@
 #include "bytearraymodel.h"
 #include <QtDebug>
+
 //========================= // PostIMPLementation метод (не прыщ)
 class ByteArrayModelPrivate {
 public:
     QByteArray data;
     const int rowLenght = 8;
+
 };
 //-------------------------
 
@@ -49,37 +51,11 @@ int ByteArrayModel::columnCount(const QModelIndex &parent) const
     return m_dptr->rowLenght;
 }
 
-QVariant ByteArrayModel::binData(const QModelIndex &index, int role) const
-{
-    QString binStr = "";
-    int temp = 0;
-    QVariant result;
-    switch(role) {
-      case Qt::DisplayRole:
-      case Qt::EditRole:   {
-        int row = index.row();
-        int col = index.column();
-        int originalIndex = row*m_dptr->rowLenght+col;
-        // TODO QString toBin(data[originalIndex])
-        if (originalIndex < m_dptr->data.size() ) {
-          temp = static_cast<int>(m_dptr->data[originalIndex]);
-          while (temp) {
-              binStr.push_front(temp & 1);
-              temp = temp >> 1;
-            }
-          result = QVariant(binStr); // сюда влепить QString bin
-        }
-      }
-        break;
-      default:
-        break;
-    }
-    return result;
-}
-
 QVariant ByteArrayModel::data(const QModelIndex &index, int role) const
 {
 
+    std::string binStr = "";
+    int temp = 0;
     QVariant result;
     switch(role) {
       case Qt::DisplayRole:
@@ -88,7 +64,17 @@ QVariant ByteArrayModel::data(const QModelIndex &index, int role) const
         int col = index.column();
         int originalIndex = row*m_dptr->rowLenght+col;
         if (originalIndex < m_dptr->data.size() ) {
-          result = QVariant(int(m_dptr->data[originalIndex]));
+            if (binView == true) {
+                temp = static_cast<int>(m_dptr->data[originalIndex]);
+                while (temp) {
+                    binStr += std::to_string(temp & 1);
+                    temp = temp >> 1;
+                }
+                std::reverse(binStr.begin(), binStr.end());
+                result = QVariant(QString::fromStdString(binStr));
+
+            } else
+                result = QVariant(int(m_dptr->data[originalIndex]));
         }
       }
         break;
@@ -96,11 +82,17 @@ QVariant ByteArrayModel::data(const QModelIndex &index, int role) const
         break;
     }
     return result;
+
+
+
 }
 
 Qt::ItemFlags ByteArrayModel::flags(const QModelIndex &index) const
 {
-    return Qt::ItemIsEnabled | Qt::ItemIsEditable | Qt::ItemIsSelectable;
+    if (binView == false)
+      return Qt::ItemIsEnabled | Qt::ItemIsEditable | Qt::ItemIsSelectable;
+    else
+      return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
 bool ByteArrayModel::setData(const QModelIndex &index, const QVariant &value, int role)
@@ -120,5 +112,9 @@ bool ByteArrayModel::setData(const QModelIndex &index, const QVariant &value, in
         break;
     }
     return result;
+}
+
+void ByteArrayModel::switchFormat() {
+    binView = !binView;
 }
 
