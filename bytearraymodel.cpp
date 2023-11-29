@@ -54,8 +54,8 @@ int ByteArrayModel::columnCount(const QModelIndex &parent) const
 QVariant ByteArrayModel::data(const QModelIndex &index, int role) const
 {
 
-    std::string binStr = "";
-    int temp = 0;
+    QString binStr = "";
+    uint8_t temp = 0;
     QVariant result;
     switch(role) {
       case Qt::DisplayRole:
@@ -65,16 +65,11 @@ QVariant ByteArrayModel::data(const QModelIndex &index, int role) const
         int originalIndex = row*m_dptr->rowLenght+col;
         if (originalIndex < m_dptr->data.size() ) {
             if (binView == true) {
-                temp = static_cast<int>(m_dptr->data[originalIndex]);
-                while (temp) {
-                    binStr += std::to_string(temp & 1);
-                    temp = temp >> 1;
-                }
-                std::reverse(binStr.begin(), binStr.end());
-                result = QVariant(QString::fromStdString(binStr));
-
+                temp = static_cast<uint8_t>(m_dptr->data[originalIndex]);
+                binStr += QString::number(temp, 2); // выводит число по основанию 2
+                result = QVariant(binStr);
             } else
-                result = QVariant(int(m_dptr->data[originalIndex]));
+                result = QVariant(uint8_t(m_dptr->data[originalIndex]));
         }
       }
         break;
@@ -111,6 +106,7 @@ bool ByteArrayModel::setData(const QModelIndex &index, const QVariant &value, in
       default:
         break;
     }
+    emit dataChanged(index, index); // почему-то не меняет значение первого "столбца"
     return result;
 }
 

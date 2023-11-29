@@ -86,12 +86,14 @@ void MainWindow::onBinBtnClicked()
       model->switchFormat();
       ui->tableView->setModel(model);
       ui->tableView->resizeColumnsToContents();
+      ui->tableView->setFocus();
       ui->binBtn->setText("Show Byte");
     } else
   if (ui->binBtn->text() == "Show Byte") {
       model->switchFormat();
       ui->tableView->setModel(model);
       ui->tableView->resizeColumnsToContents();
+      ui->tableView->setFocus();
       ui->binBtn->setText("Show Binary");
     }
 }
