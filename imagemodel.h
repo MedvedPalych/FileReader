@@ -20,6 +20,9 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole | Qt::EditRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole | Qt::EditRole) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role);
+    Qt::ItemFlags flags(const QModelIndex &index) const;
+    QImage getModelImage();
 
 private:
     QImage modelImage;

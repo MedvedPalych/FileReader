@@ -16,15 +16,14 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
-private slots:
-    void onSetData();
+private:
+    Ui::MainWindow *ui;
+    ByteArrayModel *model;
+    ImageModel *imodel;
+// SLOTS
     void onLoadFile();
     void onSaveFile();
     void onOpenRGB();
     void onBinBtnClicked();
-private:
-    Ui::MainWindow *ui;
-    ImageModel *imodel;
-    ByteArrayModel *model;
 };
 #endif // MAINWINDOW_H

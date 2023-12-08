@@ -54,8 +54,6 @@ int ByteArrayModel::columnCount(const QModelIndex &parent) const
 QVariant ByteArrayModel::data(const QModelIndex &index, int role) const
 {
 
-    QString binStr = "";
-    uint8_t temp = 0;
     QVariant result;
     switch(role) {
       case Qt::DisplayRole:
@@ -64,12 +62,7 @@ QVariant ByteArrayModel::data(const QModelIndex &index, int role) const
         int col = index.column();
         int originalIndex = row*m_dptr->rowLenght+col;
         if (originalIndex < m_dptr->data.size() ) {
-            if (binView == true) {
-                temp = static_cast<uint8_t>(m_dptr->data[originalIndex]);
-                binStr += QString::number(temp, 2); // выводит число по основанию 2
-                result = QVariant(binStr);
-            } else
-                result = QVariant(uint8_t(m_dptr->data[originalIndex]));
+           result = QVariant(uint8_t(m_dptr->data[originalIndex]));
         }
       }
         break;
@@ -78,16 +71,11 @@ QVariant ByteArrayModel::data(const QModelIndex &index, int role) const
     }
     return result;
 
-
-
 }
 
 Qt::ItemFlags ByteArrayModel::flags(const QModelIndex &index) const
 {
-    if (binView == false)
       return Qt::ItemIsEnabled | Qt::ItemIsEditable | Qt::ItemIsSelectable;
-    else
-      return Qt::ItemIsEnabled | Qt::ItemIsSelectable;
 }
 
 bool ByteArrayModel::setData(const QModelIndex &index, const QVariant &value, int role)
@@ -101,6 +89,7 @@ bool ByteArrayModel::setData(const QModelIndex &index, const QVariant &value, in
         if (originalIndex < m_dptr->data.size() ) {
             m_dptr->data[originalIndex] = (char)value.toInt();
         }
+        emit dataChanged(index,index);
       }
         break;
       default:
